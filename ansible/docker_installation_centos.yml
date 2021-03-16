@@ -1,0 +1,33 @@
+---
+-host: centos_node1
+ become: true
+ vars:
+  create_containers: 4
+  default_container_name: centos
+  default_container_image: centos
+  default_container_command: sleep 1d
+
+  
+    - name: Install required system packages
+      yum install -y yum-utils 
+
+    - name: Add Docker Repository
+      yum-config-manager  --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+      state: present
+
+    - name: Install Docker Module for Python
+      pip:
+        name: centos
+
+    - name: Pull default Docker image
+      docker_image:
+        name: "{{ default_container_image }}"
+        source: pull
+
+    - name: Create default containers
+      centos_container:
+        name: "{{ default_container_name }}{{ item }}"
+        image: "{{ default_container_image }}"
+        command: "{{ default_container_command }}"
+        state: present
+      with_sequence: count={{ create_containers }}
